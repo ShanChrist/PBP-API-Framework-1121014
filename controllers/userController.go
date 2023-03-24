@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 
@@ -148,4 +149,35 @@ func DeleteUser(c *gin.Context) {
 		return
 	}
 	sendResponse(c, 200, "Success Deleted")
+}
+
+func GetSpecificUser(c *gin.Context) {
+	db := connect()
+	defer db.Close()
+
+	idUser := c.Param("id")
+
+	query := "SELECT * FROM users WHERE id = ?"
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		sendResponse(c, http.StatusBadRequest, "Error preparing query")
+		log.Println(err)
+		return
+	}
+	defer stmt.Close()
+
+	var user User
+
+	row := stmt.QueryRow(idUser)
+	err = row.Scan(&user.ID, &user.Username, &user.FirstName, &user.LastName, &user.Email, &user.Password, &user.UserType)
+	if err == sql.ErrNoRows {
+		sendResponse(c, http.StatusNotFound, "User not found")
+		return
+	} else if err != nil {
+		sendResponse(c, http.StatusInternalServerError, "Error querying database")
+		log.Println(err)
+		return
+	}
+
+	sendUserResponse(c, http.StatusOK, "Success", []User{user})
 }
