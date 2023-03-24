@@ -15,6 +15,7 @@ func main() {
 	router.POST("/insertUser", controllers.InsertUser)
 	router.PUT("/updateUser/:id", controllers.UpdateUser)
 	router.DELETE("/deleteUser/:id", controllers.DeleteUser)
+	router.DELETE("/user/:id", controllers.GetSpecificUser)
 
 	err := router.Run(":7777")
 	if err != nil {
